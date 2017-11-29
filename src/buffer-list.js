@@ -50,9 +50,14 @@ const BufferDataType = {
  * individual message from each URL and AudioBuffer.
  */
 function BufferList(context, bufferData, options) {
-  this._context = Utils.isAudioContext(context) ?
+  if (DEBUG) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('BufferList: Invalid BaseAudioContext.');
+  } else {
+    this._context = context;
+  }
+  
 
   this._options = {
     dataType: BufferDataType.BASE64,
@@ -97,11 +102,17 @@ BufferList.prototype.load = function() {
  * @param {function} reject Promise reject.
  */
 BufferList.prototype._promiseGenerator = function(resolve, reject) {
-  if (typeof resolve !== 'function') {
-    Utils.throw('BufferList: Invalid Promise resolver.');
+  
+  if (DEBUG) {
+    if (typeof resolve !== 'function') {
+      Utils.throw('BufferList: Invalid Promise resolver.');
+    } else {
+      this._resolveHandler = resolve;
+    }
   } else {
     this._resolveHandler = resolve;
   }
+  
 
   if (typeof reject === 'function') {
     this._rejectHandler = reject;
@@ -129,9 +140,12 @@ BufferList.prototype._launchAsyncLoadTask = function(taskId) {
       },
       function(errorMessage) {
         that._updateProgress(taskId, null);
-        const message = 'BufferList: decoding ArrayByffer("' + taskId +
-            '" from Base64-encoded data failed. (' + errorMessage + ')';
-        Utils.throw(message);
+        if (DEBUG) {
+           const message = 'BufferList: decoding ArrayByffer("' + taskId +
+              '" from Base64-encoded data failed. (' + errorMessage + ')';
+          Utils.throw(message);
+        }
+       
         that._rejectHandler(message);
       });
 };
@@ -157,23 +171,35 @@ BufferList.prototype._launchAsyncLoadTaskXHR = function(taskId) {
           },
           function(errorMessage) {
             that._updateProgress(taskId, null);
-            const message = 'BufferList: decoding "' +
+            
+            if (DEBUG) {
+              const message = 'BufferList: decoding "' +
                 that._bufferData[taskId] + '" failed. (' + errorMessage + ')';
-            Utils.throw(message);
+              Utils.throw(message);
+            }
+           
             that._rejectHandler(message);
           });
     } else {
-      const message = 'BufferList: XHR error while loading "' +
+
+      if (DEBUG) {
+        const message = 'BufferList: XHR error while loading "' +
           that._bufferData[taskId] + '(' + xhr.statusText + ')';
-      Utils.throw(message);
+        Utils.throw(message);
+      }
+      
       that._rejectHandler(message);
     }
   };
 
   xhr.onerror = function(event) {
-    Utils.throw(
+
+    if (DEBUG) {
+      Utils.throw(
         'BufferList: XHR network failed on loading "' +
         that._bufferData[taskId] + '".');
+    }
+    
     that._updateProgress(taskId, null);
     that._rejectHandler();
   };
@@ -190,18 +216,25 @@ BufferList.prototype._launchAsyncLoadTaskXHR = function(taskId) {
 BufferList.prototype._updateProgress = function(taskId, audioBuffer) {
   this._bufferList[taskId] = audioBuffer;
 
-  if (this._options.verbose) {
-    let messageString = this._options.dataType === BufferDataType.BASE64
-        ? 'ArrayBuffer(' + taskId + ') from Base64-encoded HRIR'
-        : '"' + this._bufferData[taskId] + '"';
-    Utils.log('BufferList: ' + messageString + ' successfully loaded.');
+  if (DEBUG) {
+    if (this._options.verbose) {
+      let messageString = this._options.dataType === BufferDataType.BASE64
+          ? 'ArrayBuffer(' + taskId + ') from Base64-encoded HRIR'
+          : '"' + this._bufferData[taskId] + '"';
+      Utils.log('BufferList: ' + messageString + ' successfully loaded.');
+    }
   }
+  
 
   if (--this._numberOfTasks === 0) {
-    let messageString = this._options.dataType === BufferDataType.BASE64
+
+    if (DEBUG) {
+      let messageString = this._options.dataType === BufferDataType.BASE64
         ? this._bufferData.length + ' AudioBuffers from Base64-encoded HRIRs'
         : this._bufferData.length + ' files via XHR';
-    Utils.log('BufferList: ' + messageString + ' loaded successfully.');
+      Utils.log('BufferList: ' + messageString + ' loaded successfully.');
+    }
+    
     this._resolveHandler(this._bufferList);
   }
 };

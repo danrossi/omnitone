@@ -17,6 +17,7 @@
  * @file Omnitone library common utilities.
  */
 
+if (DEBUG) {
 
 /**
  * Omnitone library logging function.
@@ -46,6 +47,8 @@ exports.throw = function() {
 
   throw new Error(false);
 };
+
+}
 
 
 // Static temp storage for matrix inversion.
@@ -198,18 +201,30 @@ exports.mergeBufferListByChannel = function(context, bufferList) {
 
   for (let i = 0; i < bufferList.length; ++i) {
     if (bufferNumberOfChannel > 32) {
-      exports.throw('Utils.mergeBuffer: Number of channels cannot exceed 32.' +
+      if (DEBUG) {
+        exports.throw('Utils.mergeBuffer: Number of channels cannot exceed 32.' +
           '(got ' + bufferNumberOfChannel + ')');
+      } else {
+        return;
+      }
     }
     if (bufferLength !== bufferList[i].length) {
-      exports.throw('Utils.mergeBuffer: AudioBuffer lengths are ' +
+      if (DEBUG) {
+        exports.throw('Utils.mergeBuffer: AudioBuffer lengths are ' +
           'inconsistent. (expected ' + bufferLength + ' but got ' +
           bufferList[i].length + ')');
+      } else {
+        return;
+      }
     }
     if (bufferSampleRate !== bufferList[i].sampleRate) {
-      exports.throw('Utils.mergeBuffer: AudioBuffer sample rates are ' +
+      if (DEBUG) {
+        exports.throw('Utils.mergeBuffer: AudioBuffer sample rates are ' +
           'inconsistent. (expected ' + bufferSampleRate + ' but got ' +
           bufferList[i].sampleRate + ')');
+      } else {
+        return;
+      }
     }
     bufferNumberOfChannel += bufferList[i].numberOfChannels;
   }
@@ -239,8 +254,12 @@ exports.mergeBufferListByChannel = function(context, bufferList) {
  */
 exports.splitBufferbyChannel = function(context, audioBuffer, splitBy) {
   if (audioBuffer.numberOfChannels <= splitBy) {
-    exports.throw('Utils.splitBuffer: Insufficient number of channels. (' +
+    if (DEBUG) {
+      exports.throw('Utils.splitBuffer: Insufficient number of channels. (' +
         audioBuffer.numberOfChannels + ' splitted by ' + splitBy + ')');
+    } else {
+      return;
+    }
   }
 
   let bufflerList = [];

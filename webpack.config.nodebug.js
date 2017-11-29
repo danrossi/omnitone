@@ -20,16 +20,16 @@ module.exports = {
   entry: './src/main.js',
   output: {
     path: __dirname + '/build',
-    filename: 'omnitone.min.js',
+    filename: 'omnitone.nodebug.js',
     libraryTarget: 'umd'
   },
   plugins: [
     new webpack.DefinePlugin({
-      DEBUG: JSON.stringify(true),
-      POLYFILL: JSON.stringify(true)
+      DEBUG: JSON.stringify(false),
+      POLYFILL: JSON.stringify(false)
     }),
     new UglifyJSPlugin({
-      sourceMap: true,
+      sourceMap: false,
       uglifyOptions: {
         mangle: {
           // To address the 'let' bug in Safari 10. See:

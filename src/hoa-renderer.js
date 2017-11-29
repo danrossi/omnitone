@@ -62,9 +62,14 @@ const SupportedAmbisonicOrder = [2, 3];
  * @param {RenderingMode} [config.renderingMode='ambisonic'] - Rendering mode.
  */
 function HOARenderer(context, config) {
-  this._context = Utils.isAudioContext(context) ?
+  
+  if (DEBUG) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('HOARenderer: Invalid BaseAudioContext.');
+  } else {
+    this._context = context;
+  }
 
   this._config = {
     ambisonicOrder: 3,
@@ -72,13 +77,18 @@ function HOARenderer(context, config) {
   };
 
   if (config && config.ambisonicOrder) {
-    if (SupportedAmbisonicOrder.includes(config.ambisonicOrder)) {
-      this._config.ambisonicOrder = config.ambisonicOrder;
+    if (DEBUG) {
+      if (SupportedAmbisonicOrder.includes(config.ambisonicOrder)) {
+        this._config.ambisonicOrder = config.ambisonicOrder;
+      } else {
+        Utils.log(
+            'HOARenderer: Invalid ambisonic order. (got ' +
+            config.ambisonicOrder + ') Fallbacks to 3rd-order ambisonic.');
+      }
     } else {
-      Utils.log(
-          'HOARenderer: Invalid ambisonic order. (got ' +
-          config.ambisonicOrder + ') Fallbacks to 3rd-order ambisonic.');
+      this._config.ambisonicOrder = config.ambisonicOrder;
     }
+    
   }
 
   this._config.numberOfChannels =
@@ -91,20 +101,29 @@ function HOARenderer(context, config) {
         config.hrirPathList.length === this._config.numberOfStereoChannels) {
       this._config.pathList = config.hrirPathList;
     } else {
-      Utils.throw(
+
+      if (DEBUG) {
+         Utils.throw(
           'HOARenderer: Invalid HRIR URLs. It must be an array with ' +
           this._config.numberOfStereoChannels + ' URLs to HRIR files.' +
           ' (got ' + config.hrirPathList + ')');
+      }
+     
     }
   }
 
   if (config && config.renderingMode) {
-    if (Object.values(RenderingMode).includes(config.renderingMode)) {
-      this._config.renderingMode = config.renderingMode;
+    
+    if (DEBUG) {
+      if (Object.values(RenderingMode).includes(config.renderingMode)) {
+        this._config.renderingMode = config.renderingMode;
+      } else {
+        Utils.log(
+            'HOARenderer: Invalid rendering mode. (got ' +
+            config.renderingMode + ') Fallbacks to "ambisonic".');
+      }
     } else {
-      Utils.log(
-          'HOARenderer: Invalid rendering mode. (got ' +
-          config.renderingMode + ') Fallbacks to "ambisonic".');
+      this._config.renderingMode = config.renderingMode;
     }
   }
 
@@ -158,12 +177,20 @@ HOARenderer.prototype._initializeCallback = function(resolve, reject) {
         this._hoaConvolver.setHRIRBufferList(hrirBufferList);
         this.setRenderingMode(this._config.renderingMode);
         this._isRendererReady = true;
-        Utils.log('HOARenderer: HRIRs loaded successfully. Ready.');
+        
+        if (DEBUG) {
+          Utils.log('HOARenderer: HRIRs loaded successfully. Ready.');
+        }
+        
         resolve();
       }.bind(this),
       function() {
-        const errorMessage = 'HOARenderer: HRIR loading/decoding failed.';
-        Utils.throw(errorMessage);
+        
+        if (DEBUG) {
+          const errorMessage = 'HOARenderer: HRIR loading/decoding failed.';
+          Utils.throw(errorMessage);
+        }
+        
         reject(errorMessage);
       });
 };
@@ -174,12 +201,19 @@ HOARenderer.prototype._initializeCallback = function(resolve, reject) {
  * @return {Promise}
  */
 HOARenderer.prototype.initialize = function() {
-  Utils.log(
+  
+  if (DEBUG) {
+    Utils.log(
       'HOARenderer: Initializing... (mode: ' + this._config.renderingMode +
       ', ambisonic order: ' + this._config.ambisonicOrder + ')');
+  }
 
   return new Promise(this._initializeCallback.bind(this), function(error) {
-    Utils.throw('HOARenderer: Initialization failed. (' + error + ')');
+    
+    if (DEBUG) {
+      Utils.throw('HOARenderer: Initialization failed. (' + error + ')');
+    }  
+    
   });
 };
 
@@ -237,14 +271,22 @@ HOARenderer.prototype.setRenderingMode = function(mode) {
       this._bypass.disconnect();
       break;
     default:
-      Utils.log(
+
+      if (DEBUG) {
+        Utils.log(
           'HOARenderer: Rendering mode "' + mode + '" is not ' +
           'supported.');
+      }
+      
       return;
   }
 
   this._config.renderingMode = mode;
-  Utils.log('HOARenderer: Rendering mode changed. (' + mode + ')');
+
+  if (DEBUG) {
+    Utils.log('HOARenderer: Rendering mode changed. (' + mode + ')');
+  }
+  
 };
 
 

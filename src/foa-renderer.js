@@ -59,9 +59,14 @@ const RenderingMode = {
  * @param {RenderingMode} [config.renderingMode='ambisonic'] - Rendering mode.
  */
 function FOARenderer(context, config) {
-  this._context = Utils.isAudioContext(context) ?
+  if (DEBUG) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('FOARenderer: Invalid BaseAudioContext.');
+    } else {
+      this._context = context;
+    }
+  
 
   this._config = {
     channelMap: FOARouter.ChannelMap.DEFAULT,
@@ -70,13 +75,19 @@ function FOARenderer(context, config) {
 
   if (config) {
     if (config.channelMap) {
-      if (Array.isArray(config.channelMap) && config.channelMap.length === 4) {
-        this._config.channelMap = config.channelMap;
+      
+      if (DEBUG) {
+        if (Array.isArray(config.channelMap) && config.channelMap.length === 4) {
+          this._config.channelMap = config.channelMap;
+        } else {
+          Utils.throw(
+              'FOARenderer: Invalid channel map. (got ' + config.channelMap
+              + ')');
+        }
       } else {
-        Utils.throw(
-            'FOARenderer: Invalid channel map. (got ' + config.channelMap
-            + ')');
+        this._config.channelMap = config.channelMap;
       }
+      
     }
 
     if (config.hrirPathList) {
@@ -84,20 +95,30 @@ function FOARenderer(context, config) {
           config.hrirPathList.length === 2) {
         this._config.pathList = config.hrirPathList;
       } else {
-        Utils.throw(
+
+        if (DEBUG) {
+          Utils.throw(
             'FOARenderer: Invalid HRIR URLs. It must be an array with ' +
             '2 URLs to HRIR files. (got ' + config.hrirPathList + ')');
+        }
+        
       }
     }
 
     if (config.renderingMode) {
-      if (Object.values(RenderingMode).includes(config.renderingMode)) {
-        this._config.renderingMode = config.renderingMode;
+
+      if (DEBUG) {
+        if (Object.values(RenderingMode).includes(config.renderingMode)) {
+          this._config.renderingMode = config.renderingMode;
+        } else {
+          Utils.log(
+              'FOARenderer: Invalid rendering mode order. (got' +
+              config.renderingMode + ') Fallbacks to the mode "ambisonic".');
+        }
       } else {
-        Utils.log(
-            'FOARenderer: Invalid rendering mode order. (got' +
-            config.renderingMode + ') Fallbacks to the mode "ambisonic".');
+        this._config.renderingMode = config.renderingMode;
       }
+      
     }
   }
 
@@ -146,12 +167,20 @@ FOARenderer.prototype._initializeCallback = function(resolve, reject) {
         this._foaConvolver.setHRIRBufferList(hrirBufferList);
         this.setRenderingMode(this._config.renderingMode);
         this._isRendererReady = true;
-        Utils.log('FOARenderer: HRIRs loaded successfully. Ready.');
+
+        if (DEBUG) {
+          Utils.log('FOARenderer: HRIRs loaded successfully. Ready.');
+        }
+        
         resolve();
       }.bind(this),
       function() {
-        const errorMessage = 'FOARenderer: HRIR loading/decoding failed.';
-        Utils.throw(errorMessage);
+
+        if (DEBUG) {
+          const errorMessage = 'FOARenderer: HRIR loading/decoding failed.';
+          Utils.throw(errorMessage);
+        }
+        
         reject(errorMessage);
       });
 };
@@ -162,12 +191,18 @@ FOARenderer.prototype._initializeCallback = function(resolve, reject) {
  * @return {Promise}
  */
 FOARenderer.prototype.initialize = function() {
-  Utils.log(
+  if (DEBUG) {
+    Utils.log(
       'FOARenderer: Initializing... (mode: ' + this._config.renderingMode +
       ')');
-
+  }
+  
   return new Promise(this._initializeCallback.bind(this), function(error) {
-    Utils.throw('FOARenderer: Initialization failed. (' + error + ')');
+    
+    if (DEBUG) {
+      Utils.throw('FOARenderer: Initialization failed. (' + error + ')');
+    }
+    
   });
 };
 
@@ -182,9 +217,13 @@ FOARenderer.prototype.setChannelMap = function(channelMap) {
   }
 
   if (channelMap.toString() !== this._config.channelMap.toString()) {
-    Utils.log(
+    
+    if (DEBUG) {
+      Utils.log(
         'Remapping channels ([' + this._config.channelMap.toString() +
         '] -> [' + channelMap.toString() + ']).');
+    }
+    
     this._config.channelMap = channelMap.slice();
     this._foaRouter.setChannelMap(this._config.channelMap);
   }
@@ -263,14 +302,22 @@ FOARenderer.prototype.setRenderingMode = function(mode) {
       this._bypass.disconnect();
       break;
     default:
-      Utils.log(
+
+      if (DEBUG) {
+        Utils.log(
           'FOARenderer: Rendering mode "' + mode + '" is not ' +
           'supported.');
+      }
+      
       return;
   }
 
   this._config.renderingMode = mode;
-  Utils.log('FOARenderer: Rendering mode changed. (' + mode + ')');
+
+  if (DEBUG) {
+    Utils.log('FOARenderer: Rendering mode changed. (' + mode + ')');
+  }
+  
 };
 
 

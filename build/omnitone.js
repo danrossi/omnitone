@@ -75,7 +75,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
+/***/ (function(module, exports, __webpack_require__) {
 
 /**
  * Copyright 2016 Google Inc. All Rights Reserved.
@@ -96,6 +96,7 @@ return /******/ (function(modules) { // webpackBootstrap
  * @file Omnitone library common utilities.
  */
 
+if (true) {
 
 /**
  * Omnitone library logging function.
@@ -125,6 +126,8 @@ exports.throw = function() {
 
   throw new Error(false);
 };
+
+}
 
 
 // Static temp storage for matrix inversion.
@@ -277,18 +280,30 @@ exports.mergeBufferListByChannel = function(context, bufferList) {
 
   for (let i = 0; i < bufferList.length; ++i) {
     if (bufferNumberOfChannel > 32) {
-      exports.throw('Utils.mergeBuffer: Number of channels cannot exceed 32.' +
+      if (true) {
+        exports.throw('Utils.mergeBuffer: Number of channels cannot exceed 32.' +
           '(got ' + bufferNumberOfChannel + ')');
+      } else {
+        return;
+      }
     }
     if (bufferLength !== bufferList[i].length) {
-      exports.throw('Utils.mergeBuffer: AudioBuffer lengths are ' +
+      if (true) {
+        exports.throw('Utils.mergeBuffer: AudioBuffer lengths are ' +
           'inconsistent. (expected ' + bufferLength + ' but got ' +
           bufferList[i].length + ')');
+      } else {
+        return;
+      }
     }
     if (bufferSampleRate !== bufferList[i].sampleRate) {
-      exports.throw('Utils.mergeBuffer: AudioBuffer sample rates are ' +
+      if (true) {
+        exports.throw('Utils.mergeBuffer: AudioBuffer sample rates are ' +
           'inconsistent. (expected ' + bufferSampleRate + ' but got ' +
           bufferList[i].sampleRate + ')');
+      } else {
+        return;
+      }
     }
     bufferNumberOfChannel += bufferList[i].numberOfChannels;
   }
@@ -318,8 +333,12 @@ exports.mergeBufferListByChannel = function(context, bufferList) {
  */
 exports.splitBufferbyChannel = function(context, audioBuffer, splitBy) {
   if (audioBuffer.numberOfChannels <= splitBy) {
-    exports.throw('Utils.splitBuffer: Insufficient number of channels. (' +
+    if (true) {
+      exports.throw('Utils.splitBuffer: Insufficient number of channels. (' +
         audioBuffer.numberOfChannels + ' splitted by ' + splitBy + ')');
+    } else {
+      return;
+    }
   }
 
   let bufflerList = [];
@@ -414,9 +433,14 @@ const BufferDataType = {
  * individual message from each URL and AudioBuffer.
  */
 function BufferList(context, bufferData, options) {
-  this._context = Utils.isAudioContext(context) ?
+  if (true) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('BufferList: Invalid BaseAudioContext.');
+  } else {
+    this._context = context;
+  }
+  
 
   this._options = {
     dataType: BufferDataType.BASE64,
@@ -461,11 +485,17 @@ BufferList.prototype.load = function() {
  * @param {function} reject Promise reject.
  */
 BufferList.prototype._promiseGenerator = function(resolve, reject) {
-  if (typeof resolve !== 'function') {
-    Utils.throw('BufferList: Invalid Promise resolver.');
+  
+  if (true) {
+    if (typeof resolve !== 'function') {
+      Utils.throw('BufferList: Invalid Promise resolver.');
+    } else {
+      this._resolveHandler = resolve;
+    }
   } else {
     this._resolveHandler = resolve;
   }
+  
 
   if (typeof reject === 'function') {
     this._rejectHandler = reject;
@@ -493,9 +523,12 @@ BufferList.prototype._launchAsyncLoadTask = function(taskId) {
       },
       function(errorMessage) {
         that._updateProgress(taskId, null);
-        const message = 'BufferList: decoding ArrayByffer("' + taskId +
-            '" from Base64-encoded data failed. (' + errorMessage + ')';
-        Utils.throw(message);
+        if (true) {
+           const message = 'BufferList: decoding ArrayByffer("' + taskId +
+              '" from Base64-encoded data failed. (' + errorMessage + ')';
+          Utils.throw(message);
+        }
+       
         that._rejectHandler(message);
       });
 };
@@ -521,23 +554,35 @@ BufferList.prototype._launchAsyncLoadTaskXHR = function(taskId) {
           },
           function(errorMessage) {
             that._updateProgress(taskId, null);
-            const message = 'BufferList: decoding "' +
+            
+            if (true) {
+              const message = 'BufferList: decoding "' +
                 that._bufferData[taskId] + '" failed. (' + errorMessage + ')';
-            Utils.throw(message);
+              Utils.throw(message);
+            }
+           
             that._rejectHandler(message);
           });
     } else {
-      const message = 'BufferList: XHR error while loading "' +
+
+      if (true) {
+        const message = 'BufferList: XHR error while loading "' +
           that._bufferData[taskId] + '(' + xhr.statusText + ')';
-      Utils.throw(message);
+        Utils.throw(message);
+      }
+      
       that._rejectHandler(message);
     }
   };
 
   xhr.onerror = function(event) {
-    Utils.throw(
+
+    if (true) {
+      Utils.throw(
         'BufferList: XHR network failed on loading "' +
         that._bufferData[taskId] + '".');
+    }
+    
     that._updateProgress(taskId, null);
     that._rejectHandler();
   };
@@ -554,18 +599,25 @@ BufferList.prototype._launchAsyncLoadTaskXHR = function(taskId) {
 BufferList.prototype._updateProgress = function(taskId, audioBuffer) {
   this._bufferList[taskId] = audioBuffer;
 
-  if (this._options.verbose) {
-    let messageString = this._options.dataType === BufferDataType.BASE64
-        ? 'ArrayBuffer(' + taskId + ') from Base64-encoded HRIR'
-        : '"' + this._bufferData[taskId] + '"';
-    Utils.log('BufferList: ' + messageString + ' successfully loaded.');
+  if (true) {
+    if (this._options.verbose) {
+      let messageString = this._options.dataType === BufferDataType.BASE64
+          ? 'ArrayBuffer(' + taskId + ') from Base64-encoded HRIR'
+          : '"' + this._bufferData[taskId] + '"';
+      Utils.log('BufferList: ' + messageString + ' successfully loaded.');
+    }
   }
+  
 
   if (--this._numberOfTasks === 0) {
-    let messageString = this._options.dataType === BufferDataType.BASE64
+
+    if (true) {
+      let messageString = this._options.dataType === BufferDataType.BASE64
         ? this._bufferData.length + ' AudioBuffers from Base64-encoded HRIRs'
         : this._bufferData.length + ' files via XHR';
-    Utils.log('BufferList: ' + messageString + ' loaded successfully.');
+      Utils.log('BufferList: ' + messageString + ' loaded successfully.');
+    }
+    
     this._resolveHandler(this._bufferList);
   }
 };
@@ -1644,9 +1696,16 @@ const FOARouter = __webpack_require__(4);
 const HOAConvolver = __webpack_require__(5);
 const HOARenderer = __webpack_require__(11);
 const HOARotator = __webpack_require__(6);
-const Polyfill = __webpack_require__(14);
+
+if (true) {
+  const Polyfill = __webpack_require__(14);
+}
+
 const Utils = __webpack_require__(0);
-const Version = __webpack_require__(15);
+
+if (true) {
+  const Version = __webpack_require__(15);
+}
 
 
 /**
@@ -1667,7 +1726,7 @@ let Omnitone = {};
  * @memberOf Omnitone
  * @static {BrowserInfo}
  */
-Omnitone.browserInfo = Polyfill.getBrowserInfo();
+if (true) Omnitone.browserInfo = Polyfill.getBrowserInfo();
 
 
 /**
@@ -1810,13 +1869,19 @@ Omnitone.createHOARenderer = function(context, config) {
 // Handle Pre-load Tasks: detects the browser information and prints out the
 // version number. If the browser is Safari, patch prefixed interfaces.
 (function() {
-  Utils.log('Version ' + Version + ' (running ' +
+  if (true) {
+    Utils.log('Version ' + Version + ' (running ' +
       Omnitone.browserInfo.name + ' ' + Omnitone.browserInfo.version +
       ' on ' + Omnitone.browserInfo.platform +')');
-  if (Omnitone.browserInfo.name.toLowerCase() === 'safari') {
-    Polyfill.patchSafari();
-    Utils.log(Omnitone.browserInfo.name + ' detected. Polyfill applied.');
   }
+
+  if (true) {
+    if (Omnitone.browserInfo.name.toLowerCase() === 'safari') {
+      Polyfill.patchSafari();
+      Utils.log(Omnitone.browserInfo.name + ' detected. Polyfill applied.');
+    }
+  }
+  
 })();
 
 
@@ -1889,9 +1954,14 @@ const RenderingMode = {
  * @param {RenderingMode} [config.renderingMode='ambisonic'] - Rendering mode.
  */
 function FOARenderer(context, config) {
-  this._context = Utils.isAudioContext(context) ?
+  if (true) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('FOARenderer: Invalid BaseAudioContext.');
+    } else {
+      this._context = context;
+    }
+  
 
   this._config = {
     channelMap: FOARouter.ChannelMap.DEFAULT,
@@ -1900,13 +1970,19 @@ function FOARenderer(context, config) {
 
   if (config) {
     if (config.channelMap) {
-      if (Array.isArray(config.channelMap) && config.channelMap.length === 4) {
-        this._config.channelMap = config.channelMap;
+      
+      if (true) {
+        if (Array.isArray(config.channelMap) && config.channelMap.length === 4) {
+          this._config.channelMap = config.channelMap;
+        } else {
+          Utils.throw(
+              'FOARenderer: Invalid channel map. (got ' + config.channelMap
+              + ')');
+        }
       } else {
-        Utils.throw(
-            'FOARenderer: Invalid channel map. (got ' + config.channelMap
-            + ')');
+        this._config.channelMap = config.channelMap;
       }
+      
     }
 
     if (config.hrirPathList) {
@@ -1914,20 +1990,30 @@ function FOARenderer(context, config) {
           config.hrirPathList.length === 2) {
         this._config.pathList = config.hrirPathList;
       } else {
-        Utils.throw(
+
+        if (true) {
+          Utils.throw(
             'FOARenderer: Invalid HRIR URLs. It must be an array with ' +
             '2 URLs to HRIR files. (got ' + config.hrirPathList + ')');
+        }
+        
       }
     }
 
     if (config.renderingMode) {
-      if (Object.values(RenderingMode).includes(config.renderingMode)) {
-        this._config.renderingMode = config.renderingMode;
+
+      if (true) {
+        if (Object.values(RenderingMode).includes(config.renderingMode)) {
+          this._config.renderingMode = config.renderingMode;
+        } else {
+          Utils.log(
+              'FOARenderer: Invalid rendering mode order. (got' +
+              config.renderingMode + ') Fallbacks to the mode "ambisonic".');
+        }
       } else {
-        Utils.log(
-            'FOARenderer: Invalid rendering mode order. (got' +
-            config.renderingMode + ') Fallbacks to the mode "ambisonic".');
+        this._config.renderingMode = config.renderingMode;
       }
+      
     }
   }
 
@@ -1976,12 +2062,20 @@ FOARenderer.prototype._initializeCallback = function(resolve, reject) {
         this._foaConvolver.setHRIRBufferList(hrirBufferList);
         this.setRenderingMode(this._config.renderingMode);
         this._isRendererReady = true;
-        Utils.log('FOARenderer: HRIRs loaded successfully. Ready.');
+
+        if (true) {
+          Utils.log('FOARenderer: HRIRs loaded successfully. Ready.');
+        }
+        
         resolve();
       }.bind(this),
       function() {
-        const errorMessage = 'FOARenderer: HRIR loading/decoding failed.';
-        Utils.throw(errorMessage);
+
+        if (true) {
+          const errorMessage = 'FOARenderer: HRIR loading/decoding failed.';
+          Utils.throw(errorMessage);
+        }
+        
         reject(errorMessage);
       });
 };
@@ -1992,12 +2086,18 @@ FOARenderer.prototype._initializeCallback = function(resolve, reject) {
  * @return {Promise}
  */
 FOARenderer.prototype.initialize = function() {
-  Utils.log(
+  if (true) {
+    Utils.log(
       'FOARenderer: Initializing... (mode: ' + this._config.renderingMode +
       ')');
-
+  }
+  
   return new Promise(this._initializeCallback.bind(this), function(error) {
-    Utils.throw('FOARenderer: Initialization failed. (' + error + ')');
+    
+    if (true) {
+      Utils.throw('FOARenderer: Initialization failed. (' + error + ')');
+    }
+    
   });
 };
 
@@ -2012,9 +2112,13 @@ FOARenderer.prototype.setChannelMap = function(channelMap) {
   }
 
   if (channelMap.toString() !== this._config.channelMap.toString()) {
-    Utils.log(
+    
+    if (true) {
+      Utils.log(
         'Remapping channels ([' + this._config.channelMap.toString() +
         '] -> [' + channelMap.toString() + ']).');
+    }
+    
     this._config.channelMap = channelMap.slice();
     this._foaRouter.setChannelMap(this._config.channelMap);
   }
@@ -2093,14 +2197,22 @@ FOARenderer.prototype.setRenderingMode = function(mode) {
       this._bypass.disconnect();
       break;
     default:
-      Utils.log(
+
+      if (true) {
+        Utils.log(
           'FOARenderer: Rendering mode "' + mode + '" is not ' +
           'supported.');
+      }
+      
       return;
   }
 
   this._config.renderingMode = mode;
-  Utils.log('FOARenderer: Rendering mode changed. (' + mode + ')');
+
+  if (true) {
+    Utils.log('FOARenderer: Rendering mode changed. (' + mode + ')');
+  }
+  
 };
 
 
@@ -2188,9 +2300,14 @@ const SupportedAmbisonicOrder = [2, 3];
  * @param {RenderingMode} [config.renderingMode='ambisonic'] - Rendering mode.
  */
 function HOARenderer(context, config) {
-  this._context = Utils.isAudioContext(context) ?
+  
+  if (true) {
+    this._context = Utils.isAudioContext(context) ?
       context :
       Utils.throw('HOARenderer: Invalid BaseAudioContext.');
+  } else {
+    this._context = context;
+  }
 
   this._config = {
     ambisonicOrder: 3,
@@ -2198,13 +2315,18 @@ function HOARenderer(context, config) {
   };
 
   if (config && config.ambisonicOrder) {
-    if (SupportedAmbisonicOrder.includes(config.ambisonicOrder)) {
-      this._config.ambisonicOrder = config.ambisonicOrder;
+    if (true) {
+      if (SupportedAmbisonicOrder.includes(config.ambisonicOrder)) {
+        this._config.ambisonicOrder = config.ambisonicOrder;
+      } else {
+        Utils.log(
+            'HOARenderer: Invalid ambisonic order. (got ' +
+            config.ambisonicOrder + ') Fallbacks to 3rd-order ambisonic.');
+      }
     } else {
-      Utils.log(
-          'HOARenderer: Invalid ambisonic order. (got ' +
-          config.ambisonicOrder + ') Fallbacks to 3rd-order ambisonic.');
+      this._config.ambisonicOrder = config.ambisonicOrder;
     }
+    
   }
 
   this._config.numberOfChannels =
@@ -2217,20 +2339,29 @@ function HOARenderer(context, config) {
         config.hrirPathList.length === this._config.numberOfStereoChannels) {
       this._config.pathList = config.hrirPathList;
     } else {
-      Utils.throw(
+
+      if (true) {
+         Utils.throw(
           'HOARenderer: Invalid HRIR URLs. It must be an array with ' +
           this._config.numberOfStereoChannels + ' URLs to HRIR files.' +
           ' (got ' + config.hrirPathList + ')');
+      }
+     
     }
   }
 
   if (config && config.renderingMode) {
-    if (Object.values(RenderingMode).includes(config.renderingMode)) {
-      this._config.renderingMode = config.renderingMode;
+    
+    if (true) {
+      if (Object.values(RenderingMode).includes(config.renderingMode)) {
+        this._config.renderingMode = config.renderingMode;
+      } else {
+        Utils.log(
+            'HOARenderer: Invalid rendering mode. (got ' +
+            config.renderingMode + ') Fallbacks to "ambisonic".');
+      }
     } else {
-      Utils.log(
-          'HOARenderer: Invalid rendering mode. (got ' +
-          config.renderingMode + ') Fallbacks to "ambisonic".');
+      this._config.renderingMode = config.renderingMode;
     }
   }
 
@@ -2284,12 +2415,20 @@ HOARenderer.prototype._initializeCallback = function(resolve, reject) {
         this._hoaConvolver.setHRIRBufferList(hrirBufferList);
         this.setRenderingMode(this._config.renderingMode);
         this._isRendererReady = true;
-        Utils.log('HOARenderer: HRIRs loaded successfully. Ready.');
+        
+        if (true) {
+          Utils.log('HOARenderer: HRIRs loaded successfully. Ready.');
+        }
+        
         resolve();
       }.bind(this),
       function() {
-        const errorMessage = 'HOARenderer: HRIR loading/decoding failed.';
-        Utils.throw(errorMessage);
+        
+        if (true) {
+          const errorMessage = 'HOARenderer: HRIR loading/decoding failed.';
+          Utils.throw(errorMessage);
+        }
+        
         reject(errorMessage);
       });
 };
@@ -2300,12 +2439,19 @@ HOARenderer.prototype._initializeCallback = function(resolve, reject) {
  * @return {Promise}
  */
 HOARenderer.prototype.initialize = function() {
-  Utils.log(
+  
+  if (true) {
+    Utils.log(
       'HOARenderer: Initializing... (mode: ' + this._config.renderingMode +
       ', ambisonic order: ' + this._config.ambisonicOrder + ')');
+  }
 
   return new Promise(this._initializeCallback.bind(this), function(error) {
-    Utils.throw('HOARenderer: Initialization failed. (' + error + ')');
+    
+    if (true) {
+      Utils.throw('HOARenderer: Initialization failed. (' + error + ')');
+    }  
+    
   });
 };
 
@@ -2363,14 +2509,22 @@ HOARenderer.prototype.setRenderingMode = function(mode) {
       this._bypass.disconnect();
       break;
     default:
-      Utils.log(
+
+      if (true) {
+        Utils.log(
           'HOARenderer: Rendering mode "' + mode + '" is not ' +
           'supported.');
+      }
+      
       return;
   }
 
   this._config.renderingMode = mode;
-  Utils.log('HOARenderer: Rendering mode changed. (' + mode + ')');
+
+  if (true) {
+    Utils.log('HOARenderer: Rendering mode changed. (' + mode + ')');
+  }
+  
 };
 
 

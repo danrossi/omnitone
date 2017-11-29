@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+const webpack = require('webpack');
 
 module.exports = {
   entry: './src/main.js',
@@ -19,5 +20,11 @@ module.exports = {
     path: __dirname + '/build',
     filename: 'omnitone.js',
     libraryTarget: 'umd'
-  }
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      DEBUG: JSON.stringify(true),
+      POLYFILL: JSON.stringify(true)
+    })
+  ]
 };

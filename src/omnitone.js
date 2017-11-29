@@ -28,9 +28,16 @@ const FOARouter = require('./foa-router.js');
 const HOAConvolver = require('./hoa-convolver.js');
 const HOARenderer = require('./hoa-renderer.js');
 const HOARotator = require('./hoa-rotator.js');
-const Polyfill = require('./polyfill.js');
+
+if (POLYFILL) {
+  const Polyfill = require('./polyfill.js');
+}
+
 const Utils = require('./utils.js');
-const Version = require('./version.js');
+
+if (DEBUG) {
+  const Version = require('./version.js');
+}
 
 
 /**
@@ -51,7 +58,7 @@ let Omnitone = {};
  * @memberOf Omnitone
  * @static {BrowserInfo}
  */
-Omnitone.browserInfo = Polyfill.getBrowserInfo();
+if (POLYFILL) Omnitone.browserInfo = Polyfill.getBrowserInfo();
 
 
 /**
@@ -194,13 +201,19 @@ Omnitone.createHOARenderer = function(context, config) {
 // Handle Pre-load Tasks: detects the browser information and prints out the
 // version number. If the browser is Safari, patch prefixed interfaces.
 (function() {
-  Utils.log('Version ' + Version + ' (running ' +
+  if (DEBUG) {
+    Utils.log('Version ' + Version + ' (running ' +
       Omnitone.browserInfo.name + ' ' + Omnitone.browserInfo.version +
       ' on ' + Omnitone.browserInfo.platform +')');
-  if (Omnitone.browserInfo.name.toLowerCase() === 'safari') {
-    Polyfill.patchSafari();
-    Utils.log(Omnitone.browserInfo.name + ' detected. Polyfill applied.');
   }
+
+  if (POLYFILL) {
+    if (Omnitone.browserInfo.name.toLowerCase() === 'safari') {
+      Polyfill.patchSafari();
+      Utils.log(Omnitone.browserInfo.name + ' detected. Polyfill applied.');
+    }
+  }
+  
 })();
 
 
